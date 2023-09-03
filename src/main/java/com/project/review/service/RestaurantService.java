@@ -1,6 +1,8 @@
 package com.project.review.service;
 
 import com.project.review.api.request.CreateAndEditRestaurantRequest;
+import com.project.review.api.response.RestaurantDetailView;
+import com.project.review.api.response.RestaurantView;
 import com.project.review.model.MenuEntity;
 import com.project.review.model.RestaurantEntity;
 import com.project.review.repository.MenuRepository;
@@ -70,5 +72,39 @@ public class RestaurantService {
 
         List<MenuEntity> menus = menuRepository.findAllByRestaurantId(restaurantId);
         menuRepository.deleteAll();
+    }
+
+    public List<RestaurantView> getAllRestaurants() {
+        List<RestaurantEntity> restaurants = restaurantRepository.findAll();
+
+        return restaurants.stream().map((restaurant) -> RestaurantView.builder()
+                .id(restaurant.getId())
+                .name(restaurant.getName())
+                .address(restaurant.getAddress())
+                .createdAt(restaurant.getCreatedAt())
+                .updatedAt(restaurant.getUpdatedAt())
+                .build()).toList();
+    }
+
+    public RestaurantDetailView getRestaurantDetail(Long restaurantId) {
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId).orElseThrow();
+        List<MenuEntity> menus = menuRepository.findAllByRestaurantId(restaurantId);
+
+        return RestaurantDetailView.builder()
+                .id(restaurant.getId())
+                .name(restaurant.getName())
+                .address(restaurant.getAddress())
+                .createdAt(restaurant.getCreatedAt())
+                .updatedAt(restaurant.getUpdatedAt())
+                .menus(
+                        menus.stream().map((menu) -> RestaurantDetailView.Menu.builder()
+                                .id(menu.getId())
+                                .name(menu.getName())
+                                .price(menu.getPrice())
+                                .createdAt(menu.getCreatedAt())
+                                .updatedAt(menu.getUpdatedAt())
+                                .build()).toList()
+                )
+                .build();
     }
 }
